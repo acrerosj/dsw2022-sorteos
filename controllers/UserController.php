@@ -14,11 +14,34 @@ class UserController {
     }
 
     private function isUser($name) {
-        $index = array_search($name, array_column('username'));
+        $index = array_search($name, array_map(
+            fn($user) => $user->username == $name,
+            $this->users));
         return $index;
     }
 
     private function getUser($index) {
-        return $list[$index];
+        return $this->users[$index];
+    }
+
+    public function login() {
+        require('views/user/login.php');
+    }
+
+    public function validate($name, $password) {
+        $index = $this->isUser($name);
+        if (is_numeric($index)) {
+            $user = $this->getUser($index);
+            if ($user->checkPassword($password)) {                
+                $_SESSION['username'] = $user->username;
+                $_SESSION['level'] = $user->level;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function logout() {
+        session_destroy();
     }
 }
